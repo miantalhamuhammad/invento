@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .all-\[unset\] {
+        all: unset;
+    }
+}
+
+:root {
+    /* Custom Avatar Colors */
+    --avatar-user-squaredemi-wilkinson-color-background: rgba(190, 168, 135, 1);
+    --avatar-user-squaredrew-cano-color-background: rgba(209, 223, 195, 1);
+    --avatar-user-squarenatali-craig-color-background: rgba(209, 186, 169, 1);
+
+    /* Base Colors */
+    --basewhite: rgba(255, 255, 255, 1);
+    --gray-25: rgba(252, 252, 253, 1);
+    --gray-50: rgba(249, 250, 251, 1);
+    --gray-200: rgba(234, 236, 240, 1);
+    --gray-300: rgba(208, 213, 221, 1);
+    --gray-400: rgba(152, 162, 179, 1);
+    --gray-500: rgba(102, 112, 133, 1);
+    --gray-600: rgba(71, 84, 103, 1);
+    --gray-700: rgba(52, 64, 84, 1);
+    --gray-800: rgba(29, 41, 57, 1);
+    --gray-900: rgba(16, 24, 40, 1);
+
+    /* Primary Colors */
+    --primary-50: rgba(249, 245, 255, 1);
+    --primary-100: rgba(244, 235, 255, 1);
+    --primary-500: rgba(158, 119, 237, 1);
+    --primary-600: rgba(127, 86, 217, 1);
+    --primary-700: rgba(105, 65, 198, 1);
+
+    /* Shadows */
+    --shadow-md: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.1);
+    --shadow-sm: 0px 1px 2px 0px rgba(16, 24, 40, 0.06), 0px 1px 3px 0px rgba(16, 24, 40, 0.1);
+    --shadow-xs: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+
+    /* Typography */
+    --text-lg-medium-font-family: "Inter", Helvetica;
+    --text-md-medium-font-family: "Inter", Helvetica;
+    --text-sm-medium-font-family: "Inter", Helvetica;
+    --text-xs-medium-font-family: "Inter", Helvetica;
+    --text-md-normal-font-family: "Inter", Helvetica;
+    --text-sm-normal-font-family: "Inter", Helvetica;
+    --display-sm-medium-font-family: "Inter", Helvetica;
+
+    --text-lg-medium-font-size: 18px;
+    --text-md-medium-font-size: 16px;
+    --text-sm-medium-font-size: 14px;
+    --text-xs-medium-font-size: 12px;
+    --text-md-normal-font-size: 16px;
+    --text-sm-normal-font-size: 14px;
+
+    --text-lg-medium-line-height: 28px;
+    --text-md-medium-line-height: 24px;
+    --text-sm-medium-line-height: 20px;
+    --text-xs-medium-line-height: 18px;
+    --display-sm-medium-font-size: 30px;
+    --display-sm-medium-line-height: 38px;
+
+    /* Functional Tokens */
+    --radius: 0.5rem;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 215 20.2% 65.1%;
+    --foreground: 222.2 47.4% 11.2%;
+    --background: 0 0% 100%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --card: transparent;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+}
+
+@layer base {
+    /* Use custom border & background from variables */
+    * {
+        border-color: hsl(var(--border));
+    }
+
+    body {
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
+
+    .dark {
+        --background: 224 71% 4%;
+        --foreground: 213 31% 91%;
+        --muted: 223 47% 11%;
+        --muted-foreground: 215.4 16.3% 56.9%;
+        --accent: 216 34% 17%;
+        --accent-foreground: 210 40% 98%;
+        --popover: 224 71% 4%;
+        --popover-foreground: 215 20.2% 65.1%;
+        --border: 216 34% 17%;
+        --input: 216 34% 17%;
+        --card: transparent;
+        --card-foreground: 213 31% 91%;
+        --primary: 210 40% 98%;
+        --primary-foreground: 222.2 47.4% 1.2%;
+        --secondary: 222.2 47.4% 11.2%;
+        --secondary-foreground: 210 40% 98%;
+        --destructive: 0 63% 31%;
+        --destructive-foreground: 210 40% 98%;
+        --ring: 216 34% 17%;
+    }
+}
