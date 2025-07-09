@@ -7,7 +7,8 @@ const baseQuery = fetchBaseQuery({
 const api = createApi({
   baseQuery,
   tagTypes: [],
-  endpoints: () => ({}),
+  endpoints: () => ({
+  }),
 });
 
 export default api;

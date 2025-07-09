@@ -4,5 +4,17 @@ export const PATHS = {
   login: "/login",
   register: "/register",
   dashboard: "/dashboard",
-  catagory: "/catagory"
+  product: "/product",
+  catagory: "/catagory",
+  warehouse: "/warehouse",
+  stock: "/stock",
+  supplier: "/supplier",
+  purchase_order: "/purchase-order",
+  sale_order: "/sale-order",
+  customer: "/customer",
+  shipment: "/shipment",
+  employee: "/employee",
+  department: "/department",
+  payment: "/payment",
+  invoice: "/invoice",
 };
