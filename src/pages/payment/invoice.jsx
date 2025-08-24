@@ -66,7 +66,7 @@ export const Invoice = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex flex-col flex-1 pl-[250px] min-h-screen">
+                <div className="flex flex-col flex-1   min-h-screen">
                     <div className="flex-1 px-4 md:px-8 pb-8 bg-gray-50">
                         <div className="relative overflow-hidden h-full">
                             <div className="overflow-x-auto h-[calc(100%-60px)]">

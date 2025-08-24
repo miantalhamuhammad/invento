@@ -10,6 +10,7 @@ import PropTypes from "prop-types"
 
 export function AddShipmentForm({ isOpen, onClose, onSubmit }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState(null)
     const [formData, setFormData] = useState({
         shipmentId: "",
         orderId: "",
@@ -34,10 +35,22 @@ export function AddShipmentForm({ isOpen, onClose, onSubmit }) {
         }))
     }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
         setIsSubmitting(true)
+        setError(null)
         try {
-            await onSubmit?.(formData)
+            if (onSubmit) {
+                await onSubmit?.(formData)
+            } else {
+                // Direct API call if onSubmit is not provided
+                const response = await fetch('/api/shipments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+                if (!response.ok) throw new Error('Failed to create shipment');
+            }
             setFormData({
                 shipmentId: "",
                 orderId: "",
@@ -55,6 +68,7 @@ export function AddShipmentForm({ isOpen, onClose, onSubmit }) {
                 notes: "",
             })
         } catch (error) {
+            setError(error.message || 'Error submitting form')
             console.error("Error submitting form:", error)
         } finally {
             setIsSubmitting(false)
@@ -68,9 +82,15 @@ export function AddShipmentForm({ isOpen, onClose, onSubmit }) {
             title="Add new shipment"
             size="lg"
             onSubmit={handleSubmit}
-            submitLabel="Create Shipment"
+            submitLabel="Add New Shipment"
             isSubmitting={isSubmitting}
         >
+            {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center justify-between">
+                    <span>{error}</span>
+                    <button onClick={() => setError(null)} className="ml-4 text-xs underline">Dismiss</button>
+                </div>
+            )}
             <div className="space-y-6">
                 {/* Row 1 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -277,6 +297,17 @@ export function AddShipmentForm({ isOpen, onClose, onSubmit }) {
                         onChange={(e) => handleInputChange("notes", e.target.value)}
                         className="border-[#d0d5dd] min-h-[100px] text-[#667085] placeholder:text-[#98a2b3] resize-none"
                     />
+                </div>
+                {/* Add New Shipment Button */}
+                <div className="flex justify-end pt-4">
+                    <button
+                        type="button"
+                        className="bg-[#6840c6] text-white px-6 py-2 rounded-lg hover:bg-[#5631a8] transition-colors text-sm font-medium disabled:opacity-50"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? 'Adding...' : 'Add New Shipment'}
+                    </button>
                 </div>
             </div>
         </FormModal>

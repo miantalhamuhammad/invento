@@ -5,25 +5,23 @@ import { FormModal } from "../../components/ui/form-modal"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/text-area"
+import { useCreateSupplierMutation } from "../../redux/services/suppliers.js"
 import PropTypes from "prop-types"
 
 export function AddSupplierForm({ isOpen, onClose, onSubmit }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [createSupplier] = useCreateSupplierMutation()
     const [formData, setFormData] = useState({
-        supplierName: "",
-        supplierId: "",
-        contactPerson: "",
+        supplier_name: "",
+        contact_person: "",
         email: "",
-        phoneNumber: "",
+        phone: "",
         address: "",
         city: "",
         state: "",
-        zipCode: "",
-        country: "",
-        taxId: "",
-        paymentTerms: "",
-        category: "",
-        notes: "",
+        postal_code: "",
+        country: "USA",
+        is_active: true,
     })
 
     const handleInputChange = (field, value) => {
@@ -36,25 +34,42 @@ export function AddSupplierForm({ isOpen, onClose, onSubmit }) {
     const handleSubmit = async () => {
         setIsSubmitting(true)
         try {
-            await onSubmit?.(formData)
-            setFormData({
-                supplierName: "",
-                supplierId: "",
-                contactPerson: "",
-                email: "",
-                phoneNumber: "",
-                address: "",
-                city: "",
-                state: "",
-                zipCode: "",
-                country: "",
-                taxId: "",
-                paymentTerms: "",
-                category: "",
-                notes: "",
-            })
+            // Generate supplier ID or get it from backend requirements
+            const supplierPayload = {
+                supplier_id: `SUP-${Date.now()}`, // Generate a unique supplier ID
+                supplier_name: formData.supplier_name,
+                contact_person: formData.contact_person,
+                email: formData.email,
+                phone: formData.phone,
+                address: formData.address,
+                city: formData.city,
+                state: formData.state,
+                postal_code: formData.postal_code,
+                country: formData.country,
+                is_active: formData.is_active,
+            };
+
+            const result = await createSupplier(supplierPayload).unwrap()
+            if (result.success || result.succeeded) {
+                await onSubmit?.(result.data || result)
+                // Reset form
+                setFormData({
+                    supplier_name: "",
+                    contact_person: "",
+                    email: "",
+                    phone: "",
+                    address: "",
+                    city: "",
+                    state: "",
+                    postal_code: "",
+                    country: "USA",
+                    is_active: true,
+                })
+                onClose()
+            }
         } catch (error) {
-            console.error("Error submitting form:", error)
+            console.error("Error creating supplier:", error)
+            alert("Failed to create supplier. Please try again.")
         } finally {
             setIsSubmitting(false)
         }
@@ -72,168 +87,90 @@ export function AddSupplierForm({ isOpen, onClose, onSubmit }) {
         >
             <div className="space-y-6">
                 {/* Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="supplierName" className="text-sm font-medium text-[#344054]">
-                            Supplier Name
-                        </Label>
+                        <Label htmlFor="supplier_name">Supplier Name *</Label>
                         <Input
-                            id="supplierName"
-                            placeholder="Ex: ABC Supply Co."
-                            value={formData.supplierName}
-                            onChange={(e) => handleInputChange("supplierName", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="supplier_name"
+                            value={formData.supplier_name}
+                            onChange={(e) => handleInputChange("supplier_name", e.target.value)}
+                            placeholder="Enter supplier name"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="supplierId" className="text-sm font-medium text-[#344054]">
-                            Supplier ID
-                        </Label>
+                        <Label htmlFor="contact_person">Contact Person *</Label>
                         <Input
-                            id="supplierId"
-                            placeholder="Ex: SUP001"
-                            value={formData.supplierId}
-                            onChange={(e) => handleInputChange("supplierId", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="contactPerson" className="text-sm font-medium text-[#344054]">
-                            Contact Person
-                        </Label>
-                        <Input
-                            id="contactPerson"
-                            placeholder="Ex: John Smith"
-                            value={formData.contactPerson}
-                            onChange={(e) => handleInputChange("contactPerson", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="contact_person"
+                            value={formData.contact_person}
+                            onChange={(e) => handleInputChange("contact_person", e.target.value)}
+                            placeholder="Enter contact person name"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium text-[#344054]">
-                            Email Address
-                        </Label>
+                        <Label htmlFor="email">Email *</Label>
                         <Input
                             id="email"
                             type="email"
-                            placeholder="Ex: contact@supplier.com"
                             value={formData.email}
                             onChange={(e) => handleInputChange("email", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter email address"
+                            required
                         />
                     </div>
-                </div>
-
-                {/* Row 3 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <Label htmlFor="phoneNumber" className="text-sm font-medium text-[#344054]">
-                            Phone Number
-                        </Label>
+                        <Label htmlFor="phone">Phone Number</Label>
                         <Input
-                            id="phoneNumber"
-                            placeholder="Ex: +1 234 567 8900"
-                            value={formData.phoneNumber}
-                            onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange("phone", e.target.value)}
+                            placeholder="Enter phone number"
                         />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="category" className="text-sm font-medium text-[#344054]">
-                            Category
-                        </Label>
+                    <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="address">Address</Label>
                         <Input
-                            id="category"
-                            placeholder="Ex: Electronics"
-                            value={formData.category}
-                            onChange={(e) => handleInputChange("category", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="address"
+                            value={formData.address}
+                            onChange={(e) => handleInputChange("address", e.target.value)}
+                            placeholder="Enter full address"
                         />
                     </div>
-                </div>
-
-                {/* Row 4 */}
-                <div className="space-y-2">
-                    <Label htmlFor="address" className="text-sm font-medium text-[#344054]">
-                        Address
-                    </Label>
-                    <Textarea
-                        id="address"
-                        placeholder="Enter complete address"
-                        value={formData.address}
-                        onChange={(e) => handleInputChange("address", e.target.value)}
-                        className="border-[#d0d5dd] min-h-[100px] text-[#667085] placeholder:text-[#98a2b3] resize-none"
-                    />
-                </div>
-
-                {/* Row 5 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                        <Label htmlFor="city" className="text-sm font-medium text-[#344054]">
-                            City
-                        </Label>
+                        <Label htmlFor="city">City</Label>
                         <Input
                             id="city"
-                            placeholder="Ex: New York"
                             value={formData.city}
                             onChange={(e) => handleInputChange("city", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter city"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="state" className="text-sm font-medium text-[#344054]">
-                            State
-                        </Label>
+                        <Label htmlFor="state">State</Label>
                         <Input
                             id="state"
-                            placeholder="Ex: NY"
                             value={formData.state}
                             onChange={(e) => handleInputChange("state", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter state"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="zipCode" className="text-sm font-medium text-[#344054]">
-                            ZIP Code
-                        </Label>
+                        <Label htmlFor="postal_code">Postal Code</Label>
                         <Input
-                            id="zipCode"
-                            placeholder="Ex: 10001"
-                            value={formData.zipCode}
-                            onChange={(e) => handleInputChange("zipCode", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 6 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="taxId" className="text-sm font-medium text-[#344054]">
-                            Tax ID
-                        </Label>
-                        <Input
-                            id="taxId"
-                            placeholder="Ex: 12-3456789"
-                            value={formData.taxId}
-                            onChange={(e) => handleInputChange("taxId", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="postal_code"
+                            value={formData.postal_code}
+                            onChange={(e) => handleInputChange("postal_code", e.target.value)}
+                            placeholder="Enter postal code"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="paymentTerms" className="text-sm font-medium text-[#344054]">
-                            Payment Terms
-                        </Label>
+                        <Label htmlFor="country">Country</Label>
                         <Input
-                            id="paymentTerms"
-                            placeholder="Ex: Net 30"
-                            value={formData.paymentTerms}
-                            onChange={(e) => handleInputChange("paymentTerms", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="country"
+                            value={formData.country}
+                            onChange={(e) => handleInputChange("country", e.target.value)}
+                            placeholder="Enter country"
                         />
                     </div>
                 </div>

@@ -5,20 +5,23 @@ import { FormModal } from "../../components/ui/form-modal"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/text-area"
+import { useCreateWarehouseMutation } from "../../redux/services/warehouses.js"
 import PropTypes from "prop-types"
 
 export function AddWarehouseForm({ isOpen, onClose, onSubmit }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [createWarehouse] = useCreateWarehouseMutation()
     const [formData, setFormData] = useState({
-        warehouseName: "",
-        warehouseId: "",
+        warehouse_name: "",
         location: "",
-        address: "",
+        city: "",
+        state: "",
+        postal_code: "",
+        country: "USA",
+        manager_name: "",
+        contact_number: "",
         capacity: "",
-        managerId: "",
-        contactNumber: "",
-        email: "",
-        description: "",
+        is_active: true,
     })
 
     const handleInputChange = (field, value) => {
@@ -31,20 +34,42 @@ export function AddWarehouseForm({ isOpen, onClose, onSubmit }) {
     const handleSubmit = async () => {
         setIsSubmitting(true)
         try {
-            await onSubmit?.(formData)
-            setFormData({
-                warehouseName: "",
-                warehouseId: "",
-                location: "",
-                address: "",
-                capacity: "",
-                managerId: "",
-                contactNumber: "",
-                email: "",
-                description: "",
-            })
+            // Create payload with proper field mapping for backend
+            const warehousePayload = {
+                warehouse_id: `WH-${Date.now()}`, // Generate unique warehouse ID
+                warehouse_name: formData.warehouse_name,
+                location: formData.location,
+                city: formData.city,
+                state: formData.state,
+                postal_code: formData.postal_code,
+                country: formData.country,
+                manager_name: formData.manager_name,
+                contact_number: formData.contact_number,
+                capacity: parseInt(formData.capacity) || 0,
+                is_active: formData.is_active,
+            };
+
+            const result = await createWarehouse(warehousePayload).unwrap()
+            if (result.success || result.succeeded) {
+                await onSubmit?.(result.data || result)
+                // Reset form
+                setFormData({
+                    warehouse_name: "",
+                    location: "",
+                    city: "",
+                    state: "",
+                    postal_code: "",
+                    country: "USA",
+                    manager_name: "",
+                    contact_number: "",
+                    capacity: "",
+                    is_active: true,
+                })
+                onClose()
+            }
         } catch (error) {
-            console.error("Error submitting form:", error)
+            console.error("Error creating warehouse:", error)
+            alert("Failed to create warehouse. Please try again.")
         } finally {
             setIsSubmitting(false)
         }
@@ -61,131 +86,93 @@ export function AddWarehouseForm({ isOpen, onClose, onSubmit }) {
             isSubmitting={isSubmitting}
         >
             <div className="space-y-6">
-                {/* Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="warehouseName" className="text-sm font-medium text-[#344054]">
-                            Warehouse Name
-                        </Label>
+                        <Label htmlFor="warehouse_name">Warehouse Name *</Label>
                         <Input
-                            id="warehouseName"
-                            placeholder="Ex: 365 Warehouse SV1"
-                            value={formData.warehouseName}
-                            onChange={(e) => handleInputChange("warehouseName", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="warehouse_name"
+                            value={formData.warehouse_name}
+                            onChange={(e) => handleInputChange("warehouse_name", e.target.value)}
+                            placeholder="Enter warehouse name"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="warehouseId" className="text-sm font-medium text-[#344054]">
-                            Warehouse ID
-                        </Label>
-                        <Input
-                            id="warehouseId"
-                            placeholder="Ex: REMA0123"
-                            value={formData.warehouseId}
-                            onChange={(e) => handleInputChange("warehouseId", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="location" className="text-sm font-medium text-[#344054]">
-                            Location
-                        </Label>
+                        <Label htmlFor="location">Location *</Label>
                         <Input
                             id="location"
-                            placeholder="Ex: Austin, Texas"
                             value={formData.location}
                             onChange={(e) => handleInputChange("location", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter location address"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="capacity" className="text-sm font-medium text-[#344054]">
-                            Capacity (in SKUs)
-                        </Label>
+                        <Label htmlFor="city">City *</Label>
+                        <Input
+                            id="city"
+                            value={formData.city}
+                            onChange={(e) => handleInputChange("city", e.target.value)}
+                            placeholder="Enter city"
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="state">State *</Label>
+                        <Input
+                            id="state"
+                            value={formData.state}
+                            onChange={(e) => handleInputChange("state", e.target.value)}
+                            placeholder="Enter state"
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="postal_code">Postal Code</Label>
+                        <Input
+                            id="postal_code"
+                            value={formData.postal_code}
+                            onChange={(e) => handleInputChange("postal_code", e.target.value)}
+                            placeholder="Enter postal code"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="capacity">Capacity (sq ft)</Label>
                         <Input
                             id="capacity"
-                            placeholder="Ex: 15000"
+                            type="number"
                             value={formData.capacity}
                             onChange={(e) => handleInputChange("capacity", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 3 */}
-                <div className="space-y-2">
-                    <Label htmlFor="address" className="text-sm font-medium text-[#344054]">
-                        Full Address
-                    </Label>
-                    <Textarea
-                        id="address"
-                        placeholder="Enter complete address"
-                        value={formData.address}
-                        onChange={(e) => handleInputChange("address", e.target.value)}
-                        className="border-[#d0d5dd] min-h-[100px] text-[#667085] placeholder:text-[#98a2b3] resize-none"
-                    />
-                </div>
-
-                {/* Row 4 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="managerId" className="text-sm font-medium text-[#344054]">
-                            Manager ID
-                        </Label>
-                        <Input
-                            id="managerId"
-                            placeholder="Ex: MGR001"
-                            value={formData.managerId}
-                            onChange={(e) => handleInputChange("managerId", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter capacity"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="contactNumber" className="text-sm font-medium text-[#344054]">
-                            Contact Number
-                        </Label>
+                        <Label htmlFor="manager_name">Manager Name</Label>
                         <Input
-                            id="contactNumber"
-                            placeholder="Ex: +1 234 567 8900"
-                            value={formData.contactNumber}
-                            onChange={(e) => handleInputChange("contactNumber", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="manager_name"
+                            value={formData.manager_name}
+                            onChange={(e) => handleInputChange("manager_name", e.target.value)}
+                            placeholder="Enter manager name"
                         />
                     </div>
-                </div>
-
-                {/* Row 5 */}
-                <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-[#344054]">
-                        Email Address
-                    </Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="Ex: warehouse@company.com"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                    />
-                </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                    <Label htmlFor="description" className="text-sm font-medium text-[#344054]">
-                        Description (Optional)
-                    </Label>
-                    <Textarea
-                        id="description"
-                        placeholder="Additional notes about the warehouse"
-                        value={formData.description}
-                        onChange={(e) => handleInputChange("description", e.target.value)}
-                        className="border-[#d0d5dd] min-h-[100px] text-[#667085] placeholder:text-[#98a2b3] resize-none"
-                    />
+                    <div className="space-y-2">
+                        <Label htmlFor="contact_number">Contact Number</Label>
+                        <Input
+                            id="contact_number"
+                            value={formData.contact_number}
+                            onChange={(e) => handleInputChange("contact_number", e.target.value)}
+                            placeholder="Enter contact number"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="country">Country</Label>
+                        <Input
+                            id="country"
+                            value={formData.country}
+                            onChange={(e) => handleInputChange("country", e.target.value)}
+                            placeholder="Enter country"
+                        />
+                    </div>
                 </div>
             </div>
         </FormModal>

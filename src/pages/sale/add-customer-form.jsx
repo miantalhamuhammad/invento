@@ -5,25 +5,25 @@ import { FormModal } from "../../components/ui/form-modal"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/text-area"
+import { useCreateCustomerMutation } from "../../redux/services/customers.js"
 import PropTypes from "prop-types"
+import { Button } from "../../components/ui/button"
 
 export function AddCustomerForm({ isOpen, onClose, onSubmit }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [createCustomer] = useCreateCustomerMutation()
     const [formData, setFormData] = useState({
-        customerName: "",
-        customerId: "",
+        customer_name: "",
         email: "",
-        phoneNumber: "",
-        company: "",
+        phone: "",
         address: "",
         city: "",
         state: "",
-        zipCode: "",
-        country: "",
-        customerType: "",
-        creditLimit: "",
-        paymentTerms: "",
-        notes: "",
+        postal_code: "",
+        country: "USA",
+        customer_type: "INDIVIDUAL",
+        credit_limit: "",
+        is_active: true,
     })
 
     const handleInputChange = (field, value) => {
@@ -36,25 +36,44 @@ export function AddCustomerForm({ isOpen, onClose, onSubmit }) {
     const handleSubmit = async () => {
         setIsSubmitting(true)
         try {
-            await onSubmit?.(formData)
-            setFormData({
-                customerName: "",
-                customerId: "",
-                email: "",
-                phoneNumber: "",
-                company: "",
-                address: "",
-                city: "",
-                state: "",
-                zipCode: "",
-                country: "",
-                customerType: "",
-                creditLimit: "",
-                paymentTerms: "",
-                notes: "",
-            })
+            // Create payload with proper field mapping for backend
+            const customerPayload = {
+                customer_id: `CUST-${Date.now()}`, // Generate unique customer ID
+                customer_name: formData.customer_name,
+                email: formData.email,
+                phone: formData.phone,
+                address: formData.address,
+                city: formData.city,
+                state: formData.state,
+                postal_code: formData.postal_code,
+                country: formData.country,
+                customer_type: formData.customer_type,
+                credit_limit: parseFloat(formData.credit_limit) || 0,
+                is_active: formData.is_active,
+            };
+
+            const result = await createCustomer(customerPayload).unwrap()
+            if (result.success || result.succeeded) {
+                await onSubmit?.(result.data || result)
+                // Reset form
+                setFormData({
+                    customer_name: "",
+                    email: "",
+                    phone: "",
+                    address: "",
+                    city: "",
+                    state: "",
+                    postal_code: "",
+                    country: "USA",
+                    customer_type: "INDIVIDUAL",
+                    credit_limit: "",
+                    is_active: true,
+                })
+                onClose()
+            }
         } catch (error) {
-            console.error("Error submitting form:", error)
+            console.error("Error creating customer:", error)
+            alert("Failed to create customer. Please try again.")
         } finally {
             setIsSubmitting(false)
         }
@@ -67,173 +86,98 @@ export function AddCustomerForm({ isOpen, onClose, onSubmit }) {
             title="Add new customer"
             size="lg"
             onSubmit={handleSubmit}
-            submitLabel="Add Customer"
+            submitLabel="Add"
             isSubmitting={isSubmitting}
         >
             <div className="space-y-6">
                 {/* Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="customerName" className="text-sm font-medium text-[#344054]">
-                            Customer Name
-                        </Label>
+                        <Label htmlFor="customer_name">Customer Name *</Label>
                         <Input
-                            id="customerName"
-                            placeholder="Ex: John Doe"
-                            value={formData.customerName}
-                            onChange={(e) => handleInputChange("customerName", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="customer_name"
+                            value={formData.customer_name}
+                            onChange={(e) => handleInputChange("customer_name", e.target.value)}
+                            placeholder="Enter customer name"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="customerId" className="text-sm font-medium text-[#344054]">
-                            Customer ID
-                        </Label>
-                        <Input
-                            id="customerId"
-                            placeholder="Ex: CUST001"
-                            value={formData.customerId}
-                            onChange={(e) => handleInputChange("customerId", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium text-[#344054]">
-                            Email Address
-                        </Label>
+                        <Label htmlFor="email">Email *</Label>
                         <Input
                             id="email"
                             type="email"
-                            placeholder="Ex: john@example.com"
                             value={formData.email}
                             onChange={(e) => handleInputChange("email", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter email address"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="phoneNumber" className="text-sm font-medium text-[#344054]">
-                            Phone Number
-                        </Label>
+                        <Label htmlFor="phone">Phone Number</Label>
                         <Input
-                            id="phoneNumber"
-                            placeholder="Ex: +1 234 567 8900"
-                            value={formData.phoneNumber}
-                            onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange("phone", e.target.value)}
+                            placeholder="Enter phone number"
                         />
                     </div>
-                </div>
-
-                {/* Row 3 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <Label htmlFor="company" className="text-sm font-medium text-[#344054]">
-                            Company (Optional)
-                        </Label>
+                        <Label htmlFor="customer_type">Customer Type</Label>
+                        <select
+                            id="customer_type"
+                            value={formData.customer_type}
+                            onChange={(e) => handleInputChange("customer_type", e.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6840c6]"
+                        >
+                            <option value="INDIVIDUAL">Individual</option>
+                            <option value="BUSINESS">Business</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="address">Address</Label>
                         <Input
-                            id="company"
-                            placeholder="Ex: ABC Corp"
-                            value={formData.company}
-                            onChange={(e) => handleInputChange("company", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="address"
+                            value={formData.address}
+                            onChange={(e) => handleInputChange("address", e.target.value)}
+                            placeholder="Enter full address"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="customerType" className="text-sm font-medium text-[#344054]">
-                            Customer Type
-                        </Label>
-                        <Input
-                            id="customerType"
-                            placeholder="Ex: Retail, Wholesale"
-                            value={formData.customerType}
-                            onChange={(e) => handleInputChange("customerType", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 4 */}
-                <div className="space-y-2">
-                    <Label htmlFor="address" className="text-sm font-medium text-[#344054]">
-                        Address
-                    </Label>
-                    <Textarea
-                        id="address"
-                        placeholder="Enter complete address"
-                        value={formData.address}
-                        onChange={(e) => handleInputChange("address", e.target.value)}
-                        className="border-[#d0d5dd] min-h-[100px] text-[#667085] placeholder:text-[#98a2b3] resize-none"
-                    />
-                </div>
-
-                {/* Row 5 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="city" className="text-sm font-medium text-[#344054]">
-                            City
-                        </Label>
+                        <Label htmlFor="city">City</Label>
                         <Input
                             id="city"
-                            placeholder="Ex: New York"
                             value={formData.city}
                             onChange={(e) => handleInputChange("city", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter city"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="state" className="text-sm font-medium text-[#344054]">
-                            State
-                        </Label>
+                        <Label htmlFor="state">State</Label>
                         <Input
                             id="state"
-                            placeholder="Ex: NY"
                             value={formData.state}
                             onChange={(e) => handleInputChange("state", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            placeholder="Enter state"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="zipCode" className="text-sm font-medium text-[#344054]">
-                            ZIP Code
-                        </Label>
+                        <Label htmlFor="postal_code">Postal Code</Label>
                         <Input
-                            id="zipCode"
-                            placeholder="Ex: 10001"
-                            value={formData.zipCode}
-                            onChange={(e) => handleInputChange("zipCode", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 6 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="creditLimit" className="text-sm font-medium text-[#344054]">
-                            Credit Limit
-                        </Label>
-                        <Input
-                            id="creditLimit"
-                            placeholder="Ex: $10,000"
-                            value={formData.creditLimit}
-                            onChange={(e) => handleInputChange("creditLimit", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="postal_code"
+                            value={formData.postal_code}
+                            onChange={(e) => handleInputChange("postal_code", e.target.value)}
+                            placeholder="Enter postal code"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="paymentTerms" className="text-sm font-medium text-[#344054]">
-                            Payment Terms
-                        </Label>
+                        <Label htmlFor="credit_limit">Credit Limit</Label>
                         <Input
-                            id="paymentTerms"
-                            placeholder="Ex: Net 30"
-                            value={formData.paymentTerms}
-                            onChange={(e) => handleInputChange("paymentTerms", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="credit_limit"
+                            type="number"
+                            value={formData.credit_limit}
+                            onChange={(e) => handleInputChange("credit_limit", e.target.value)}
+                            placeholder="Enter credit limit"
                         />
                     </div>
                 </div>
@@ -251,6 +195,17 @@ export function AddCustomerForm({ isOpen, onClose, onSubmit }) {
                         className="border-[#d0d5dd] min-h-[100px] text-[#667085] placeholder:text-[#98a2b3] resize-none"
                     />
                 </div>
+            </div>
+            {/* Explicit Add button inside form content */}
+            <div className="flex justify-end mt-6">
+                <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="bg-[#6941c6] hover:bg-[#7f56d9] text-white"
+                >
+                    {isSubmitting ? "Submitting..." : "Add"}
+                </Button>
             </div>
         </FormModal>
     )

@@ -7,27 +7,31 @@ import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/text-area"
 import { Plus, Upload } from "lucide-react"
+import { useCreateProductMutation } from "../../redux/services/products.js"
+import { useGetCategoriesQuery } from "../../redux/services/categories.js"
+import { useGetSuppliersQuery } from "../../redux/services/suppliers.js"
 import PropTypes from "prop-types";
 
 export function AddProductForm({ isOpen, onClose, onSubmit }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [createProduct] = useCreateProductMutation()
+
+    // Get categories and suppliers for dropdowns
+    const { data: categoriesData } = useGetCategoriesQuery()
+    const { data: suppliersData, isLoading: suppliersLoading, error: suppliersError } = useGetSuppliersQuery()
+
     const [formData, setFormData] = useState({
-        productName: "",
-        supplierId: "",
+        product_name: "",
+        sku_code: "",
+        barcode_number: "",
+        description: "",
+        category_id: "",
+        supplier_id: "",
         weight: "",
-        category: "",
-        dimensionUnit: "",
-        dimensions: "",
-        recordedStockLevel: "",
-        warningThreshold: "",
-        autoOrderLevel: "",
-        skuCode: "",
-        barcodeNumber: "",
-        grnNumber: "",
-        purchasingPrice: "",
-        sellingPriceMargin: "",
-        productDescription: "",
-        productImage: null,
+        weight_unit: "kg",
+        purchase_price: "",
+        selling_price: "",
+        tax_rate: "18",
     })
 
     const handleInputChange = (field, value) => {
@@ -37,290 +41,225 @@ export function AddProductForm({ isOpen, onClose, onSubmit }) {
         }))
     }
 
-    const handleImageUpload = (event) => {
-        const file = event.target.files?.[0]
-        if (file) {
-            setFormData((prev) => ({
-                ...prev,
-                productImage: file,
-            }))
-        }
-    }
-
     const handleSubmit = async () => {
         setIsSubmitting(true)
         try {
-            await onSubmit?.(formData)
-            // Reset form after successful submission
-            setFormData({
-                productName: "",
-                supplierId: "",
-                weight: "",
-                category: "",
-                dimensionUnit: "",
-                dimensions: "",
-                recordedStockLevel: "",
-                warningThreshold: "",
-                autoOrderLevel: "",
-                skuCode: "",
-                barcodeNumber: "",
-                grnNumber: "",
-                purchasingPrice: "",
-                sellingPriceMargin: "",
-                productDescription: "",
-                productImage: null,
-            })
+            // Create payload with proper field mapping for backend
+            const productPayload = {
+                product_id: `PROD-${Date.now()}`, // Generate unique product ID
+                product_name: formData.product_name,
+                sku_code: formData.sku_code,
+                barcode_number: formData.barcode_number,
+                description: formData.description,
+                category_id: parseInt(formData.category_id) || null,
+                supplier_id: parseInt(formData.supplier_id) || null,
+                weight: parseFloat(formData.weight) || 0,
+                weight_unit: formData.weight_unit,
+                purchasing_price: parseFloat(formData.purchase_price) || 0, // Map to purchasing_price
+                selling_price: parseFloat(formData.selling_price) || 0,
+                tax_rate: parseFloat(formData.tax_rate) || 0,
+            };
+
+            const result = await createProduct(productPayload).unwrap()
+            if (result.success || result.succeeded) {
+                await onSubmit?.(result.data || result)
+                // Reset form
+                setFormData({
+                    product_name: "",
+                    sku_code: "",
+                    barcode_number: "",
+                    description: "",
+                    category_id: "",
+                    supplier_id: "",
+                    weight: "",
+                    weight_unit: "kg",
+                    purchase_price: "",
+                    selling_price: "",
+                    tax_rate: "18",
+                })
+                onClose()
+            }
         } catch (error) {
-            console.error("Error submitting form:", error)
+            console.error("Error creating product:", error)
+            alert("Failed to create product. Please try again.")
         } finally {
             setIsSubmitting(false)
         }
     }
 
-    const headerActions = (
-        <div className="flex items-center gap-4">
-            <Button
-                type="button"
-                variant="outline"
-                className="border-[#d0d5dd] text-[#344054] hover:bg-[#f9fafb] flex items-center gap-2 bg-transparent"
-            >
-                <Plus className="w-4 h-4" />
-                Add Custom Field
-            </Button>
-            <Button
-                type="button"
-                variant="outline"
-                className="border-[#d0d5dd] text-[#344054] hover:bg-[#f9fafb] flex items-center gap-2 bg-transparent"
-            >
-                <Upload className="w-4 h-4" />
-                Bulk Upload
-            </Button>
-        </div>
-    )
+    // Extract categories and suppliers data safely
+    const categoriesArray = Array.isArray(categoriesData)
+        ? categoriesData
+        : categoriesData?.data
+        ? Array.isArray(categoriesData.data)
+            ? categoriesData.data
+            : []
+        : [];
+
+    // Fix supplier data extraction to match the working suppliers page
+    const suppliersArray = Array.isArray(suppliersData?.data?.data) ? suppliersData.data.data : [];
+
+    console.log("Suppliers API Response:", suppliersData);
+    console.log("Extracted suppliers array:", suppliersArray);
+    console.log("Suppliers array length:", suppliersArray.length);
 
     return (
         <FormModal
             isOpen={isOpen}
             onClose={onClose}
             title="Add new product"
-            size="xl"
+            size="lg"
             onSubmit={handleSubmit}
             submitLabel="Add Product"
             isSubmitting={isSubmitting}
-            headerActions={headerActions}
         >
-            <div className="space-y-8">
-                {/* Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="productName" className="text-sm font-medium text-[#344054]">
-                            Product Name
-                        </Label>
+                        <Label htmlFor="product_name">Product Name *</Label>
                         <Input
-                            id="productName"
-                            placeholder="Ex: BoomHigh"
-                            value={formData.productName}
-                            onChange={(e) => handleInputChange("productName", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="product_name"
+                            value={formData.product_name}
+                            onChange={(e) => handleInputChange("product_name", e.target.value)}
+                            placeholder="Enter product name"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="supplierId" className="text-sm font-medium text-[#344054]">
-                            Supplier ID
-                        </Label>
+                        <Label htmlFor="sku_code">SKU Code *</Label>
                         <Input
-                            id="supplierId"
-                            placeholder="Ex: TUW10234"
-                            value={formData.supplierId}
-                            onChange={(e) => handleInputChange("supplierId", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="sku_code"
+                            value={formData.sku_code}
+                            onChange={(e) => handleInputChange("sku_code", e.target.value)}
+                            placeholder="Enter SKU code"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="weight" className="text-sm font-medium text-[#344054]">
-                            Weight (in lbs)
-                        </Label>
+                        <Label htmlFor="barcode_number">Barcode Number</Label>
                         <Input
-                            id="weight"
-                            placeholder="Enter Weight here"
-                            value={formData.weight}
-                            onChange={(e) => handleInputChange("weight", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="category" className="text-sm font-medium text-[#344054]">
-                            Category
-                        </Label>
-                        <Input
-                            id="category"
-                            placeholder="Vapes"
-                            value={formData.category}
-                            onChange={(e) => handleInputChange("category", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="barcode_number"
+                            value={formData.barcode_number}
+                            onChange={(e) => handleInputChange("barcode_number", e.target.value)}
+                            placeholder="Enter barcode number"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="dimensionUnit" className="text-sm font-medium text-[#344054]">
-                            Dimension Unit
-                        </Label>
-                        <Input
-                            id="dimensionUnit"
-                            placeholder="inch"
-                            value={formData.dimensionUnit}
-                            onChange={(e) => handleInputChange("dimensionUnit", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
+                        <Label htmlFor="category_id">Category</Label>
+                        <select
+                            id="category_id"
+                            value={formData.category_id}
+                            onChange={(e) => handleInputChange("category_id", e.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6840c6]"
+                        >
+                            <option value="">Select Category</option>
+                            {categoriesArray.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                    {category.category_name || category.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="dimensions" className="text-sm font-medium text-[#344054]">
-                            Dimensions (L x B x H)
-                        </Label>
-                        <Input
-                            id="dimensions"
-                            placeholder="20 × 30 × 40"
-                            value={formData.dimensions}
-                            onChange={(e) => handleInputChange("dimensions", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 3 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="recordedStockLevel" className="text-sm font-medium text-[#344054]">
-                            Recorded Stock Level
-                        </Label>
-                        <Input
-                            id="recordedStockLevel"
-                            placeholder="Ex: 2000"
-                            value={formData.recordedStockLevel}
-                            onChange={(e) => handleInputChange("recordedStockLevel", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="warningThreshold" className="text-sm font-medium text-[#344054]">
-                            Warning Threshold Stock Level
-                        </Label>
-                        <Input
-                            id="warningThreshold"
-                            placeholder="Ex: 100"
-                            value={formData.warningThreshold}
-                            onChange={(e) => handleInputChange("warningThreshold", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
+                        <Label htmlFor="supplier_id">Supplier *</Label>
+                        {suppliersError ? (
+                            <div className="text-red-500 text-sm">
+                                Failed to load suppliers. Please try again.
+                            </div>
+                        ) : (
+                            <select
+                                id="supplier_id"
+                                value={formData.supplier_id}
+                                onChange={(e) => handleInputChange("supplier_id", e.target.value)}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6840c6] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                disabled={suppliersLoading}
+                                required
+                            >
+                                <option value="">
+                                    {suppliersLoading ? "Loading suppliers..." : "Select Supplier"}
+                                </option>
+                                {suppliersArray.map((supplier) => (
+                                    <option key={supplier.id} value={supplier.id}>
+                                        {supplier.supplier_name || supplier.name}
+                                        {supplier.company && ` - ${supplier.company}`}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        {suppliersArray.length === 0 && !suppliersLoading && !suppliersError && (
+                            <div className="text-yellow-600 text-sm">
+                                No suppliers found. Please add suppliers first.
+                            </div>
+                        )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="autoOrderLevel" className="text-sm font-medium text-[#344054]">
-                            Auto Order Stock Level
-                        </Label>
-                        <Input
-                            id="autoOrderLevel"
-                            placeholder="Ex: 50"
-                            value={formData.autoOrderLevel}
-                            onChange={(e) => handleInputChange("autoOrderLevel", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 4 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="skuCode" className="text-sm font-medium text-[#344054]">
-                            SKU Code
-                        </Label>
-                        <Input
-                            id="skuCode"
-                            placeholder="RTY1234455"
-                            value={formData.skuCode}
-                            onChange={(e) => handleInputChange("skuCode", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="barcodeNumber" className="text-sm font-medium text-[#344054]">
-                            Barcode Number
-                        </Label>
-                        <Input
-                            id="barcodeNumber"
-                            placeholder="QWERTY0987"
-                            value={formData.barcodeNumber}
-                            onChange={(e) => handleInputChange("barcodeNumber", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="grnNumber" className="text-sm font-medium text-[#344054]">
-                            GRN Number (Optional)
-                        </Label>
-                        <Input
-                            id="grnNumber"
-                            placeholder="QWERTY56787"
-                            value={formData.grnNumber}
-                            onChange={(e) => handleInputChange("grnNumber", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 5 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label className="text-sm font-medium text-[#344054]">Insert Image (400px x 400px)</Label>
-                        <div className="border-2 border-dashed border-[#d0d5dd] rounded-lg h-48 flex items-center justify-center bg-[#f9fafb] hover:bg-[#f3f4f6] transition-colors cursor-pointer">
-                            <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="imageUpload" />
-                            <label htmlFor="imageUpload" className="cursor-pointer flex flex-col items-center">
-                                <div className="w-16 h-16 rounded-full border-2 border-[#d0d5dd] flex items-center justify-center mb-2">
-                                    <Plus className="w-6 h-6 text-[#667085]" />
-                                </div>
-                                <span className="text-sm text-[#667085]">Click to upload image</span>
-                            </label>
+                        <Label htmlFor="weight">Weight</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="weight"
+                                type="number"
+                                step="0.01"
+                                value={formData.weight}
+                                onChange={(e) => handleInputChange("weight", e.target.value)}
+                                placeholder="Enter weight"
+                                className="flex-1"
+                            />
+                            <select
+                                value={formData.weight_unit}
+                                onChange={(e) => handleInputChange("weight_unit", e.target.value)}
+                                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6840c6] w-20"
+                            >
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="purchasingPrice" className="text-sm font-medium text-[#344054]">
-                            Purchasing Price
-                        </Label>
+                        <Label htmlFor="purchase_price">Purchase Price *</Label>
                         <Input
-                            id="purchasingPrice"
-                            placeholder="Ex: $100"
-                            value={formData.purchasingPrice}
-                            onChange={(e) => handleInputChange("purchasingPrice", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="purchase_price"
+                            type="number"
+                            step="0.01"
+                            value={formData.purchase_price}
+                            onChange={(e) => handleInputChange("purchase_price", e.target.value)}
+                            placeholder="Enter purchase price"
+                            required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="sellingPriceMargin" className="text-sm font-medium text-[#344054]">
-                            Selling Price Margin
-                        </Label>
+                        <Label htmlFor="selling_price">Selling Price *</Label>
                         <Input
-                            id="sellingPriceMargin"
-                            placeholder="Ex: 20%"
-                            value={formData.sellingPriceMargin}
-                            onChange={(e) => handleInputChange("sellingPriceMargin", e.target.value)}
-                            className="border-[#d0d5dd] h-12 text-[#667085] placeholder:text-[#98a2b3]"
+                            id="selling_price"
+                            type="number"
+                            step="0.01"
+                            value={formData.selling_price}
+                            onChange={(e) => handleInputChange("selling_price", e.target.value)}
+                            placeholder="Enter selling price"
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="tax_rate">Tax Rate (%)</Label>
+                        <Input
+                            id="tax_rate"
+                            type="number"
+                            step="0.01"
+                            value={formData.tax_rate}
+                            onChange={(e) => handleInputChange("tax_rate", e.target.value)}
+                            placeholder="Enter tax rate"
                         />
                     </div>
                 </div>
 
-                {/* Product Description */}
                 <div className="space-y-2">
-                    <Label htmlFor="productDescription" className="text-sm font-medium text-[#344054]">
-                        Product Description
-                    </Label>
+                    <Label htmlFor="description">Product Description</Label>
                     <Textarea
-                        id="productDescription"
-                        placeholder="Ex: Type something about product here"
-                        value={formData.productDescription}
-                        onChange={(e) => handleInputChange("productDescription", e.target.value)}
-                        className="border-[#d0d5dd] min-h-[120px] text-[#667085] placeholder:text-[#98a2b3] resize-none"
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        placeholder="Enter product description"
+                        className="min-h-[100px]"
                     />
                 </div>
             </div>

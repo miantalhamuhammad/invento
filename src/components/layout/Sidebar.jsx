@@ -25,13 +25,24 @@ import { Input } from "../ui/input.jsx"
 import { ScrollArea } from "../ui/scroll-area.jsx"
 import { Separator } from "../ui/separator.jsx"
 import { useNavigate } from "react-router-dom"
+import { useDispatch } from "react-redux"
+import { logout } from "../../redux/slices/authSlice.js"
 import { PATHS } from "../../routes/path"
 import { useState } from "react"
 
 export const SidebarNavigationSection = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const currentPath = window.location.pathname
     const [openGroups, setOpenGroups] = useState({})
+
+    const handleLogout = () => {
+        // Clear Redux state and localStorage
+        dispatch(logout())
+
+        // Redirect to login page
+        navigate("/login")
+    }
 
     const toggleGroup = (groupLabel) => {
         setOpenGroups((prev) => ({
@@ -163,8 +174,8 @@ export const SidebarNavigationSection = () => {
         {
             icon: <Settings className="w-5 h-5" />,
             label: "Roles",
-            isActive: false,
-            onClick: () => navigate("/under-development"),
+            isActive: currentPath === PATHS.roles,
+            onClick: () => navigate(PATHS.roles),
         },
         {
             icon: <LifeBuoy className="w-5 h-5" />,
@@ -181,7 +192,7 @@ export const SidebarNavigationSection = () => {
     ]
 
     return (
-        <aside className="fixed left-0 top-0 w-[280px] h-screen rounded-r-[20px] shadow-[0px_4px_4px_#00000040] bg-basewhite overflow-hidden z-50">
+        <aside className="fixed left-0 top-0 w-[280px] h-screen rounded-r-[20px] shadow-[0px_4px_4px_#00000040] bg-basewhite overflow-hidden z-50 hidden md:block">
             <div className="flex flex-col h-full">
                 {/* Header Section */}
                 <div className="flex flex-col gap-6 pt-8 pb-4">
@@ -309,6 +320,7 @@ export const SidebarNavigationSection = () => {
                             variant="ghost"
                             size="icon"
                             className="w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                            onClick={handleLogout}
                         >
                             <LogOut className="w-4 h-4" />
                         </Button>

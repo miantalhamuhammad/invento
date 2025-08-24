@@ -17,4 +17,13 @@ export const PATHS = {
   department: "/department",
   payment: "/payment",
   invoice: "/invoice",
+  roles: "/roles",
+
+  // Supplier/Vendor routes
+  supplier_login: "/supplier-login",
+  supplier_register: "/supplier-register",
+  supplier_dashboard: "/supplier-dashboard",
+  supplier_profile: "/supplier-profile",
+  supplier_po_requests: "/supplier/po-requests",
+  supplier_quotations: "/supplier/quotations",
 };

@@ -7,18 +7,85 @@ import { Button } from "../../components/ui/button";
 import { AddProductForm } from "./add-product";
 import { ProductListSection } from "./sections/ListSection";
 import { Layout } from "../../components/layout/Layout";
-import {useState} from "react";
+import { useState } from "react";
+import {
+    useGetProductsQuery,
+    useDeleteProductMutation
+} from "../../redux/services/products.js";
 
 export const Product = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // API hooks
+    const { data: productsResponse, isLoading, error, refetch } = useGetProductsQuery();
+    const [deleteProduct] = useDeleteProductMutation();
 
     const handleOpen = () => setIsOpen(true);
     const handleClose = () => setIsOpen(false);
 
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this product?")) {
+            try {
+                await deleteProduct(id).unwrap();
+                refetch();
+            } catch (error) {
+                console.error("Failed to delete product:", error);
+                alert("Failed to delete product. Please try again.");
+            }
+        }
+    };
+
     const handleFormSubmit = async (formData) => {
         console.log("Submitted product data:", formData);
-        setIsOpen(false); // Close modal after successful submission
+        setIsOpen(false);
+        refetch();
     };
+
+    // Extract products data from response and ensure it's an array
+    const productsArray = Array.isArray(productsResponse)
+        ? productsResponse
+        : productsResponse?.data?.data
+        ? Array.isArray(productsResponse.data.data)
+            ? productsResponse.data.data
+            : []
+        : productsResponse?.data?.products
+        ? Array.isArray(productsResponse.data.products)
+            ? productsResponse.data.products
+            : []
+        : productsResponse?.data
+        ? Array.isArray(productsResponse.data)
+            ? productsResponse.data
+            : []
+        : productsResponse?.products
+        ? Array.isArray(productsResponse.products)
+            ? productsResponse.products
+            : []
+        : [];
+
+
+    if (isLoading) {
+        return (
+            <Layout>
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-lg">Loading products...</div>
+                </div>
+            </Layout>
+        );
+    }
+
+    if (error) {
+        return (
+            <Layout>
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-lg text-red-600">
+                        Error loading products: {error.message || "Something went wrong"}
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
+
     return (
         <Layout>
             {/* Header Section */}
@@ -43,8 +110,7 @@ export const Product = () => {
                             <span>Select dates</span>
                         </Button>
 
-                        <Button className="flex items-center gap-2 bg-[#6840c6] hover:bg-[#5a38b0] text-white" onClick={handleOpen}
-                        >
+                        <Button className="flex items-center gap-2 bg-[#6840c6] hover:bg-[#5a38b0] text-white" onClick={handleOpen}>
                             <PlusCircleIcon className="w-4 h-4 md:w-5 md:h-5" />
                             <span>Add New Product</span>
                         </Button>
@@ -52,22 +118,21 @@ export const Product = () => {
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="flex flex-col flex-1 pl-[250px] min-h-screen"> {/* Main container */}
-                <div className="flex-1 px-4 md:px-8 pb-8 bg-gray-50"> {/* Content container */}
-                    <div className="relative overflow-hidden h-full"> {/* Card container */}
-                        {/* Product Table */}
-                        <div className="overflow-x-auto h-[calc(100%-60px)]"> {/* Scrollable area */}
-                            <ProductListSection />
-                            <AddProductForm
-                                isOpen={isOpen}
-                                onClose={handleClose}
-                                onSubmit={handleFormSubmit}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Product List Section with API data */}
+            <ProductListSection
+                products={productsArray}
+                onDelete={handleDelete}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                isLoading={isLoading}
+            />
+
+            {/* Add Product Modal */}
+            <AddProductForm
+                isOpen={isOpen}
+                onClose={handleClose}
+                onSubmit={handleFormSubmit}
+            />
         </Layout>
     );
 };
