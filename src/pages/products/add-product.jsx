@@ -2,11 +2,9 @@
 
 import { useState } from "react"
 import { FormModal } from "../../components/ui/form-modal"
-import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/text-area"
-import { Plus, Upload } from "lucide-react"
 import { useCreateProductMutation } from "../../redux/services/products.js"
 import { useGetCategoriesQuery } from "../../redux/services/categories.js"
 import { useGetSuppliersQuery } from "../../redux/services/suppliers.js"
