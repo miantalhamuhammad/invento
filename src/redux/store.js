@@ -19,6 +19,7 @@ import "./services/roles.js";
 import "./services/permissions.js";
 import "./services/users.js";
 import "./services/supplier.js";
+import "./services/companies.js";
 
 export const store = configureStore({
   reducer: {
@@ -32,5 +33,5 @@ export const store = configureStore({
         ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
     }).concat(apiMiddleware),
-  devTools: process.env.NODE_ENV !== "production",
+  devTools: import.meta.env.DEV,
 });

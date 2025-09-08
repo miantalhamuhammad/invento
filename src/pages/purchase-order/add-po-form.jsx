@@ -122,7 +122,7 @@ export function AddPurchaseOrderForm({ isOpen, onClose, onSubmit }) {
             isOpen={isOpen}
             onClose={onClose}
             title="Add new purchase order"
-            size="lg"
+            size="xl"
             onSubmit={handleSubmit}
             submitLabel="Create Purchase Order"
             isSubmitting={isSubmitting}
@@ -312,16 +312,16 @@ export function AddPurchaseOrderForm({ isOpen, onClose, onSubmit }) {
                 {submitError && <div className="text-red-500 mt-2">{submitError}</div>}
 
                 {/* New Purchase Order Button */}
-                <div className="flex justify-end mt-4">
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        className={`px-6 py-2 rounded-md text-white font-semibold bg-blue-600 hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                        {isSubmitting ? 'Submitting...' : 'New Purchase Order'}
-                    </button>
-                </div>
+                {/*<div className="flex justify-end mt-4">*/}
+                {/*    <button*/}
+                {/*        type="button"*/}
+                {/*        onClick={handleSubmit}*/}
+                {/*        disabled={isSubmitting}*/}
+                {/*        className={`px-6 py-2 rounded-md text-white font-semibold bg-blue-600 hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}*/}
+                {/*    >*/}
+                {/*        {isSubmitting ? 'Submitting...' : 'New Purchase Order'}*/}
+                {/*    </button>*/}
+                {/*</div>*/}
             </div>
         </FormModal>
     )

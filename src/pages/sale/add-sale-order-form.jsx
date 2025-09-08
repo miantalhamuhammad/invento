@@ -334,16 +334,16 @@ export function AddSalesOrderForm({ isOpen, onClose, onSubmit }) {
                 </div>
             </div>
 
-            <div className="flex justify-end mt-6">
-                <button
-                    type="button"
-                    className="bg-[#6941c6] hover:bg-[#7f56d9] text-white font-semibold py-2 px-4 rounded shadow"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? "Submitting..." : "New Sale Order"}
-                </button>
-            </div>
+            {/*<div className="flex justify-end mt-6">*/}
+            {/*    <button*/}
+            {/*        type="button"*/}
+            {/*        className="bg-[#6941c6] hover:bg-[#7f56d9] text-white font-semibold py-2 px-4 rounded shadow"*/}
+            {/*        onClick={handleSubmit}*/}
+            {/*        disabled={isSubmitting}*/}
+            {/*    >*/}
+            {/*        {isSubmitting ? "Submitting..." : "New Sale Order"}*/}
+            {/*    </button>*/}
+            {/*</div>*/}
         </FormModal>
     )
 }

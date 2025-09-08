@@ -6,27 +6,22 @@ import { Button } from "./button"
 import PropTypes from "prop-types"
 
 export function FormModal({
-    isOpen,
-    onClose,
-    title,
-    children,
-    size = "lg",
-    onSubmit,
-    submitLabel = "Submit",
-    cancelLabel = "Cancel",
-    isSubmitting = false,
-    showFooter = true,
-    headerActions,
-    footerActions,
-    ...modalProps
-}) {
+                              isOpen,
+                              onClose,
+                              title,
+                              children,
+                              size = "lg",
+                              onSubmit,
+                              submitLabel = "Submit",
+                              cancelLabel = "Cancel",
+                              isSubmitting = false,
+                              showFooter = true,
+                              headerActions,
+                              footerActions,
+                              ...modalProps
+                          }) {
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden"
-        } else {
-            document.body.style.overflow = "unset"
-        }
-
+        document.body.style.overflow = isOpen ? "hidden" : "unset"
         return () => {
             document.body.style.overflow = "unset"
         }
@@ -34,15 +29,11 @@ export function FormModal({
 
     useEffect(() => {
         const handleEscape = (e) => {
-            if (e.key === "Escape") {
-                onClose()
-            }
+            if (e.key === "Escape") onClose()
         }
-
         if (isOpen) {
             document.addEventListener("keydown", handleEscape)
         }
-
         return () => {
             document.removeEventListener("keydown", handleEscape)
         }
@@ -66,53 +57,63 @@ export function FormModal({
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto" {...modalProps}>
             {/* Backdrop */}
-            <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
+            <div
+                className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                onClick={onClose}
+            />
 
-            {/* Modal */}
+            {/* Modal container */}
             <div className="flex min-h-full items-center justify-center p-4">
                 <div
                     className={`
-                        relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl 
-                        transform transition-all max-h-[90vh] overflow-hidden flex flex-col
-                    `}
+            relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl 
+            transform transition-all max-h-[90vh] flex flex-col
+          `}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <form onSubmit={handleSubmit} className="flex flex-col h-full">
-                        {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-[#eaecf0]">
+                        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+                        <div className="flex items-center gap-2">
+                            {headerActions}
                             <button
                                 type="button"
-                                className="text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600"
                                 onClick={onClose}
+                                className="text-gray-400 hover:text-gray-600"
                             >
-                                <X className="h-6 w-6" />
+                                <X className="h-5 w-5" />
                             </button>
                         </div>
+                    </div>
 
-                        {/* Header Actions */}
-                        {headerActions && <div className="px-6 py-4 border-b border-[#eaecf0]">{headerActions}</div>}
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                        {/* scrollable content */}
+                        <div className="flex-1 overflow-y-auto p-6 min-h-0">{children}</div>
 
-                        {/* Form Content */}
-                        <div className="flex-1 p-6 overflow-y-auto">{children}</div>
-
-                        {/* Footer */}
+                        {/* footer */}
                         {showFooter && (
-                            <div className="flex items-center justify-between p-6 border-t border-[#eaecf0] bg-[#f9fafb]">
-                                <div>{footerActions}</div>
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={onClose}
-                                        className="border-[#d0d5dd] text-[#344054] hover:bg-[#f9fafb] bg-transparent"
-                                    >
-                                        {cancelLabel}
-                                    </Button>
-                                    <Button type="submit" disabled={isSubmitting} className="bg-[#6941c6] hover:bg-[#7f56d9] text-white">
-                                        {isSubmitting ? "Submitting..." : submitLabel}
-                                    </Button>
-                                </div>
+                            <div className="flex items-center justify-between p-6 border-t border-[#eaecf0] bg-white">
+                                {footerActions ? (
+                                    footerActions
+                                ) : (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={onClose}
+                                            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                        >
+                                            {cancelLabel}
+                                        </button>
+                                        <Button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="bg-[#6941c6] hover:bg-[#7f56d9] text-white"
+                                        >
+                                            {isSubmitting ? "Submitting..." : submitLabel}
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         )}
                     </form>

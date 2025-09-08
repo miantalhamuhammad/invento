@@ -230,15 +230,16 @@ export default function LoginPage() {
 
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
+    rememberMe: false
   })
   const [error, setError] = useState("")
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
   }
 
@@ -247,28 +248,43 @@ export default function LoginPage() {
     setError("")
 
     try {
+      console.log("Attempting login with:", formData) // Debug log
       const result = await login(formData).unwrap()
+      console.log("Login API response:", result) // Debug log
 
+      // Check for both 'success' and 'succeeded' fields to handle different response formats
       if (result.success || result.succeeded) {
-        const userData = result.data?.user || result.user
-        const tokenData = result.data?.token || result.token
+        console.log("Login successful, dispatching actions...") // Debug log
 
+        // Ensure user data includes role, permissions, and company info
+        const userData = result.data?.user || result.user;
+        const tokenData = result.data?.token || result.token;
+
+        console.log("User data from login:", userData); // Debug log
+
+        // Dispatch login success with complete user data including company info
         dispatch(loginSuccess({
           user: userData,
           token: tokenData
-        }))
+        }));
 
-        // ✅ Navigate based on user role
-        const userRole = userData?.role?.name || userData?.roleName
-        if (userRole?.toLowerCase() === "supplier") {
-          navigate("/supplier-dashboard")
+        // Navigate based on user role
+        console.log("User role:", userData?.role?.name || userData?.roleName); // Debug log
+        const userRole = userData?.role?.name || userData?.roleName;
+
+        if (userRole === 'supplier') {
+          console.log("Navigating to supplier dashboard..."); // Debug log
+          navigate("/supplier-dashboard");
         } else {
-          navigate("/dashboard")
+          console.log("Navigating to regular dashboard..."); // Debug log
+          navigate("/dashboard");
         }
       } else {
+        console.log("Login failed - success/succeeded was false") // Debug log
         setError(result.message || "Login failed")
       }
     } catch (err) {
+      console.error("Login error:", err) // Debug log
       const errorMessage = err?.data?.message || "Login failed. Please try again."
       setError(errorMessage)
       dispatch(loginFailure(errorMessage))
@@ -283,10 +299,9 @@ export default function LoginPage() {
             <div className="flex items-center justify-center bg-white rounded-full px-8 py-4 mb-6">
             <span className="text-black text-4xl font-bold tracking-tight">
               Invento
-              <span className="relative inline-block">
-                <span className="p-3"> </span>
+              <span className="relative inline-block ml-1">
                 <svg
-                    className="absolute -top-2 left-1/2 -translate-x-1/2"
+                    className="inline-block"
                     width="24"
                     height="12"
                     viewBox="0 0 24 12"
@@ -313,13 +328,11 @@ export default function LoginPage() {
           <div className="w-full max-w-md space-y-6">
             <div className="text-center">
               <h1 className="text-3xl font-bold text-[#101828]">Welcome back</h1>
-              <p className="text-[#344054] mt-2">
-                Welcome back! Please enter your details.
-              </p>
+              <p className="text-[#344054] mt-2">Welcome back! Please enter your details.</p>
             </div>
 
             {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                   {error}
                 </div>
             )}
@@ -333,9 +346,9 @@ export default function LoginPage() {
                     id="email"
                     name="email"
                     type="email"
+                    placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="Enter your email"
                     className="border-[#d0d5dd] text-[#98a2b3]"
                     required
                 />
@@ -348,41 +361,45 @@ export default function LoginPage() {
                     id="password"
                     name="password"
                     type="password"
+                    placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    placeholder="********"
                     className="border-[#d0d5dd] text-[#98a2b3]"
                     required
                 />
               </div>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" className="border-[#d0d5dd]" />
-                  <label htmlFor="remember" className="text-[#667085]">
-                    Remember for 30 days
-                  </label>
+                  <Checkbox
+                      id="rememberMe"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onCheckedChange={(checked) => handleInputChange({ target: { name: 'rememberMe', type: 'checkbox', checked } })}
+                      className="border-[#d0d5dd]"
+                  />
+                  <label htmlFor="rememberMe" className="text-sm text-[#344054]">Remember for 30 days</label>
                 </div>
-                <Link to="/forgot-password" className="text-[#6941c6] font-medium hover:underline">
+                <Link to="/forgot-password" className="text-sm text-[#6941c6] font-medium hover:underline">
                   Forgot password
                 </Link>
               </div>
               <Button
                   type="submit"
+                  className="w-full bg-[#6941c6] text-white py-2 rounded-md hover:bg-[#5a37a8] disabled:opacity-50"
                   disabled={isLoading}
-                  className="w-full bg-[#6941c6] hover:bg-[#5a38b0] text-white py-2 px-4 rounded-lg font-medium"
               >
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
               <Button
+                  type="button"
                   variant="outline"
                   className="w-full flex items-center justify-center gap-2 border-[#d0d5dd] text-[#344054] py-2 rounded-md hover:bg-gray-50 bg-transparent"
               >
                 <GoogleSignInButton />
               </Button>
             </form>
-
             <p className="text-center text-sm text-[#667085]">
-              Don’t have an account?{" "}
+              Don't have an account?{" "}
               <Link to="/register" className="text-[#6941c6] font-medium hover:underline">
                 Sign up
               </Link>

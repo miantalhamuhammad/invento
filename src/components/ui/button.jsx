@@ -84,18 +84,35 @@ const SIZES = {
   icon: "h-9 w-9 p-0 flex items-center justify-center",
 };
 
-function Button({ variant = "default", size = "default", className = "", children, ...props }) {
+// function Button({ variant = "default", size = "default", className = "", children, ...props }) {
+//   const baseClasses =
+//       "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+//   const variantClass = VARIANTS[variant] || VARIANTS.default;
+//   const sizeClass = SIZES[size] || SIZES.default;
+//
+//   return (
+//       <button className={`${baseClasses} ${variantClass} ${sizeClass} ${className}`} {...props}>
+//         {children}
+//       </button>
+//   );
+// }
+function Button({ variant = "default", size = "default", className = "", children, type = "button", ...props }) {
   const baseClasses =
       "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
   const variantClass = VARIANTS[variant] || VARIANTS.default;
   const sizeClass = SIZES[size] || SIZES.default;
 
   return (
-      <button className={`${baseClasses} ${variantClass} ${sizeClass} ${className}`} {...props}>
+      <button
+          type={type}   // ✅ make sure type is explicitly forwarded
+          className={`${baseClasses} ${variantClass} ${sizeClass} ${className}`}
+          {...props}
+      >
         {children}
       </button>
   );
 }
+
 
 Button.propTypes = {
   variant: PropTypes.oneOf(["default", "destructive", "outline", "secondary", "ghost", "link"]),

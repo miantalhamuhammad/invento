@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { FormModal } from "../../components/ui/form-modal"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
-import { Button } from "../../components/ui/button.jsx"
+// import { Button } from "../../components/ui/button.jsx"
 import { Alert } from "../../components/ui/alert"
 import PropTypes from "prop-types"
 import { stockService } from "../../services/index.js"
@@ -237,7 +237,14 @@ export function AddStockForm({ isOpen, onClose, onSubmit }) {
     }
 
     return (
-        <FormModal isOpen={isOpen} onClose={handleClose} title="Add New Stock Entry" size="xl">
+        <FormModal isOpen={isOpen}
+                   onClose={onClose}
+                   onSubmit={handleSubmit}
+                   isSubmitting={isSubmitting}
+                   showFooter={true}
+                   submitLabel="Add New Stock"
+                   title="Add New Stock Entry"
+                   size="xl">
             <div className="space-y-6">
                 {/* Alert */}
                 {alert.show && <Alert variant={alert.type === "error" ? "destructive" : "default"}>{alert.message}</Alert>}
@@ -436,14 +443,14 @@ export function AddStockForm({ isOpen, onClose, onSubmit }) {
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                    <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
-                        Cancel
-                    </Button>
-                    <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? "Adding Stock..." : "Add Stock"}
-                    </Button>
-                </div>
+                {/*<div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">*/}
+                {/*    <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>*/}
+                {/*        Cancel*/}
+                {/*    </Button>*/}
+                {/*    <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>*/}
+                {/*        {isSubmitting ? "Adding Stock..." : "Add Stock"}*/}
+                {/*    </Button>*/}
+                {/*</div>*/}
             </div>
         </FormModal>
     )

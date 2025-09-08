@@ -50,6 +50,7 @@ export const api = createApi({
     "PORequest",
     "Quotation",
     "Profile",
+    "Company", // Add Company tag for cache invalidation
   ],
   endpoints: () => ({}),
 });

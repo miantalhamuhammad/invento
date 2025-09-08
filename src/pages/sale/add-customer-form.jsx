@@ -7,7 +7,7 @@ import { Label } from "../../components/ui/label"
 import { Textarea } from "../../components/ui/text-area"
 import { useCreateCustomerMutation } from "../../redux/services/customers.js"
 import PropTypes from "prop-types"
-import { Button } from "../../components/ui/button"
+// import { Button } from "../../components/ui/button"
 
 export function AddCustomerForm({ isOpen, onClose, onSubmit }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -197,16 +197,16 @@ export function AddCustomerForm({ isOpen, onClose, onSubmit }) {
                 </div>
             </div>
             {/* Explicit Add button inside form content */}
-            <div className="flex justify-end mt-6">
-                <Button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="bg-[#6941c6] hover:bg-[#7f56d9] text-white"
-                >
-                    {isSubmitting ? "Submitting..." : "Add"}
-                </Button>
-            </div>
+            {/*<div className="flex justify-end mt-6">*/}
+            {/*    <Button*/}
+            {/*        type="button"*/}
+            {/*        onClick={handleSubmit}*/}
+            {/*        disabled={isSubmitting}*/}
+            {/*        className="bg-[#6941c6] hover:bg-[#7f56d9] text-white"*/}
+            {/*    >*/}
+            {/*        {isSubmitting ? "Submitting..." : "Add"}*/}
+            {/*    </Button>*/}
+            {/*</div>*/}
         </FormModal>
     )
 }
